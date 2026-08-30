@@ -169,10 +169,10 @@ percentile curve.
 ## Outputs
 
 - `rankings/ability-universities.tsv`: one latest-year row per school, with
-  `school`, a rough `school_en`, the route–field seat-weighted median expressed
+  `school`, automatic `school_en`, the route–field seat-weighted median expressed
   as percentile ability, and seat counts. Raw ЕГЭ means are not exported.
 - `rankings/ability-majors.tsv`: the same columns for each school and broad HSE
-  field, adding `major` and rough `major_en` labels and taking the weighted
+  field, adding `major` and automatic `major_en` labels and taking the weighted
   median over that field's routes. The source is coarser than a true major even
   though the common output schema calls the column `major`.
 - `rankings/route_ability.tsv`: the same allocations split by route, with
@@ -207,10 +207,15 @@ Set `PYTHON` to use a different interpreter. `parse/fipi.py` needs Poppler's
     python3 -m parse.fipi           # national counts and report coverage
     python3 coverage.py             # data/source-coverage.tsv
     python3 cohort.py               # annual empirical CDF and assessment pool
+    python3 translate_names.py      # refresh the Google Translate label cache
     python3 rank.py                 # school and school-major ability tables
     python3 route_ability.py        # rankings/route_ability.tsv
     python3 plot.py                 # rankings/ability-spread.png
     python3 -m unittest discover
+
+English labels come from the local generated `data/name-english.tsv` cache.
+`rank.py` stays offline; run `translate_names.py` when that cache needs filling
+or refreshing.
 
 `fetch.hse` takes years as arguments and `fetch.fipi` takes subject names, so
 one year or one subject can be refreshed alone; `--force` downloads a fresh

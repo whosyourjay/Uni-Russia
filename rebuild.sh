@@ -11,6 +11,7 @@ PYTHON=${PYTHON:-/usr/local/Caskroom/miniconda/base/bin/python3}
 "$PYTHON" -m parse.fipi
 "$PYTHON" coverage.py
 "$PYTHON" cohort.py
+"$PYTHON" translate_names.py
 "$PYTHON" rank.py
 "$PYTHON" route_ability.py
 "$PYTHON" plot.py

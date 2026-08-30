@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Write comparable school and school-major ability tables."""
 
-import re
-
 from lib import admissions
+from lib.english import english_names
 from lib.paths import ranking_path
 from lib.percentile import percentile
 from lib.tsvio import write_rows
@@ -11,41 +10,16 @@ from lib.tsvio import write_rows
 UNIVERSITIES = ranking_path("ability-universities.tsv")
 MAJORS = ranking_path("ability-majors.tsv")
 
-TRANSLITERATION = str.maketrans({
-    **dict(zip("абвгдеёжзийклмнопрстуфхцчшщыэюя",
-               ("a", "b", "v", "g", "d", "e", "yo", "zh", "z", "i", "y", "k",
-                "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "kh",
-                "ts", "ch", "sh", "shch", "y", "e", "yu", "ya"))),
-    "ь": "", "ъ": "",
-})
-TRANSLITERATION.update({ord(char.upper()): value.capitalize()
-                        for char, value in zip(
-                            "абвгдеёжзийклмнопрстуфхцчшщыэюя",
-                            ("a", "b", "v", "g", "d", "e", "yo", "zh", "z", "i", "y", "k",
-                             "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "kh",
-                             "ts", "ch", "sh", "shch", "y", "e", "yu", "ya"))})
-ENGLISH_TERMS = (("Моск.", "Moscow"), ("С.-Петербург", "Saint Petersburg"),
-                 ("гос.", "State"), ("ун-т.", "University"),
-                 ("ин-т.", "Institute"), ("университет", "University"),
-                 ("академия", "Academy"), ("федеральный", "Federal"),
-                 ("национальный", "National"),
-                 ("исследовательский", "Research"),
-                 ("технический", "Technical"),
-                 ("медицинский", "Medical"),
-                 ("педагогический", "Pedagogical"),
-                 ("физико-техн.", "Physics and Technology"))
-
 
 def rounded(place):
-    """A percentile, or nothing for a year with no step table behind it."""
+    """A percentile, or nothing for a year with no CDF behind it."""
     return "" if place is None else round(place, 3)
 
 
-def englishish(name):
-    """A cheap readable label: common terms translated, the rest romanized."""
-    for russian, english in ENGLISH_TERMS:
-        name = re.sub(re.escape(russian), english, name, flags=re.IGNORECASE)
-    return " ".join(name.translate(TRANSLITERATION).split())
+def labels(rows):
+    """Every institution and field name needed by a ranking build."""
+    return {row[column] for row in rows
+            for column in ("university", "field") if row[column]}
 
 
 def weighted_median(groups):
@@ -64,14 +38,17 @@ def weighted_median(groups):
     return sum(values) / len(values)
 
 
-def ability(level, year):
+def ability(level, year, english=None):
     """One row per school or school-major from route-by-field centers.
 
     Each published subgroup mean stands in for that subgroup's median. BVI
     olympiad seats are their own group at the top of the score scale.
     """
+    source = admissions.cells("field", year)
+    if english is None:
+        english = english_names(labels(source))
     totals = {}
-    for row in admissions.cells("field", year):
+    for row in source:
         seats, school = row["students"], row["university"]
         major = row["field"] if level == "field" else None
         key = (school, major)
@@ -92,9 +69,9 @@ def ability(level, year):
         if not entry["groups"]:
             continue
         score = weighted_median(entry["groups"])
-        row = {"school": school, "school_en": englishish(school)}
+        row = {"school": school, "school_en": english.get(school, "")}
         if major is not None:
-            row.update({"major": major, "major_en": englishish(major)})
+            row.update({"major": major, "major_en": english.get(major, "")})
         row.update({"ability": rounded(percentile(score, year)),
                     "seats": entry["seats"], "year": year,
                     "budget_seats": entry["budget_seats"],
@@ -110,8 +87,9 @@ def ability(level, year):
 
 def main():
     latest = max(admissions.years("university"))
+    english = english_names(labels(admissions.cells("field", latest)))
     for level, target in (("university", UNIVERSITIES), ("field", MAJORS)):
-        rows = ability(level, latest)
+        rows = ability(level, latest, english)
         print(f"wrote {write_rows(target, rows):,} {level} rows to {target}")
 
 
