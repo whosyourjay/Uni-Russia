@@ -1,4 +1,4 @@
-"""Mirror a source document once and read it from disk afterwards."""
+"""Download a source document once and read the local copy afterwards."""
 
 import os
 import urllib.request
@@ -13,7 +13,7 @@ def get(url, timeout=60):
         return response.read()
 
 
-def mirror(url, path, force=False):
+def download(url, path, force=False):
     """Save a source under `path` unless it is already there; return True if
     this call downloaded it."""
     if os.path.exists(path) and not force:
@@ -26,6 +26,6 @@ def mirror(url, path, force=False):
 
 
 def text(path):
-    """A mirrored HTML page as text."""
+    """A downloaded HTML page as text."""
     with open(path, encoding="utf-8") as f:
         return f.read()

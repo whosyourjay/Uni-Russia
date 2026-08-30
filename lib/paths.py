@@ -17,7 +17,7 @@ def data_path(*parts):
 
 
 def source_path(*parts):
-    """Absolute path to a mirrored source document."""
+    """Absolute path to a downloaded source document."""
     return path("sources", *parts)
 
 

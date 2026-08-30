@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read the national exam figures out of the FIPI Russian-language reports.
+"""Read national exam figures and distribution coverage from FIPI reports.
 
 Russian is compulsory for the school-leaving certificate, so the count its
 report gives is the size of the exam cohort the admission scores rank inside.
@@ -9,17 +9,29 @@ import glob
 import os
 import re
 
-from fetch.fipi import report_path
 from lib.paths import data_path, source_path
 from lib.pdf import pdf_text
 from lib.tsvio import write_rows
 
 TARGET = data_path("ege-national.tsv")
+COVERAGE = data_path("ege-report-coverage.tsv")
 
 PARTICIPANTS = re.compile(
     r"приняли\s+участие\s+(более\s+)?([\d  ]+?)\s*(тыс\.)?\s*человек")
 MEAN = re.compile(
     r"[Сс]редний\s+тестовый\s+балл.{0,60}?(?:составил|–|—)\s*(\d{2}(?:[,.]\d+)?)")
+DISTRIBUTIONS = {
+    "distribution_pages": re.compile(
+        r"(?:крив\w+\s+)?распредел\w*.{0,160}(?:участник\w*\s+экзамен|"
+        r"результат\w*\s+участник|балл\w*\s+участник)", re.I | re.S),
+    "primary_distribution_pages": re.compile(
+        r"распредел\w*.{0,100}первичн\w*\s+балл", re.I | re.S),
+    "test_distribution_pages": re.compile(
+        r"распредел\w*.{0,100}тестов\w*\s+балл", re.I | re.S),
+    "score_band_pages": re.compile(
+        r"(?:диапазон\w*\s+тестов\w*\s+балл|"
+        r"распредел\w*.{0,100}(?:групп|диапазон)\w*\s+балл)", re.I | re.S),
+}
 
 
 def clean(text):
@@ -44,14 +56,15 @@ def mean_score(text):
     return float(found.group(1).replace(",", ".")) if found else ""
 
 
-def years():
-    found = glob.glob(source_path("fipi", "*", "russian.pdf"))
-    return sorted(int(os.path.basename(os.path.dirname(p))) for p in found)
+def reports(subject="*"):
+    for path in sorted(glob.glob(source_path("fipi", "*", f"{subject}.pdf"))):
+        yield int(os.path.basename(os.path.dirname(path))), os.path.splitext(
+            os.path.basename(path))[0], path
 
 
-def rows():
-    for year in years():
-        text = clean(pdf_text(report_path(year, "russian")))
+def national_rows():
+    for year, _, path in reports("russian"):
+        text = clean(pdf_text(path))
         count, rounded = participants(text)
         if count is None:
             continue
@@ -60,9 +73,29 @@ def rows():
                "source": f"sources/fipi/{year}/russian.pdf"}
 
 
+def matching_pages(text, pattern):
+    return ",".join(str(number) for number, page in enumerate(text.split("\f"), 1)
+                    if number <= 15 and pattern.search(page))
+
+
+def coverage_rows():
+    for year, subject, path in reports():
+        text = pdf_text(path)
+        normalized = clean(text)
+        count, rounded = participants(normalized)
+        yield {"year": year, "subject": subject,
+               "participants": count or "", "rounded": rounded,
+               "mean_test_score": mean_score(normalized),
+               **{column: matching_pages(text, pattern)
+                  for column, pattern in DISTRIBUTIONS.items()},
+               "source": f"sources/fipi/{year}/{subject}.pdf"}
+
+
 def main():
-    found = list(rows())
-    print(f"wrote {write_rows(TARGET, found):,} years to {TARGET}")
+    national = list(national_rows())
+    coverage = list(coverage_rows())
+    print(f"wrote {write_rows(TARGET, national):,} years to {TARGET}")
+    print(f"wrote {write_rows(COVERAGE, coverage):,} reports to {COVERAGE}")
 
 
 if __name__ == "__main__":

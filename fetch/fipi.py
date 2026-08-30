@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Mirror the FIPI subject reports that carry the national exam figures.
+"""Download the FIPI reports that carry national subject-score distributions.
 
 File names change spelling from year to year, so the reports are discovered
 from the index page instead of being constructed.
 """
 
+import argparse
 import re
-import sys
 
 from lib import net
 from lib.paths import source_path
@@ -25,8 +25,6 @@ SUBJECTS = {"русск": "russian", "математик": "mathematics", "фи�
             "иностранн": "foreign-language", "английск": "english",
             "немецк": "german", "французск": "french", "испанск": "spanish",
             "китайск": "chinese"}
-DEFAULT = ("russian",)
-
 REPORT = re.compile(
     r'<a\b[^>]*?href="(https?://[^"]*?/analiticheskie-i-metodicheskie-materialy/'
     r'(\d{4})/[^"]+\.pdf)"[^>]*>(.*?)</a>', re.S)
@@ -58,20 +56,32 @@ def report_path(year, subject):
     return source_path("fipi", str(year), f"{subject}.pdf")
 
 
-def main(subjects=DEFAULT, force=False):
-    net.mirror(INDEX, INDEX_PATH, force=force)
+def main(subjects=(), years=(), force=False):
+    net.download(INDEX, INDEX_PATH, force=force)
     wanted = set(subjects)
+    wanted_years = set(years)
     fetched = kept = 0
     for year, subject, url in reports(net.text(INDEX_PATH)):
         if wanted and subject not in wanted:
             continue
-        if net.mirror(url, report_path(year, subject), force=force):
+        if wanted_years and year not in wanted_years:
+            continue
+        if net.download(url, report_path(year, subject), force=force):
             fetched += 1
+            print(f"downloaded {year} {subject}")
         else:
             kept += 1
-    print(f"mirrored {fetched} subject reports, {kept} already present")
+    print(f"downloaded {fetched} subject reports, {kept} already present")
+
+
+def arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("subjects", nargs="*", choices=sorted(set(SUBJECTS.values())))
+    parser.add_argument("--year", action="append", type=int, default=[])
+    parser.add_argument("--force", action="store_true")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    chosen = [a for a in sys.argv[1:] if not a.startswith("-")]
-    main(chosen or DEFAULT, force="--force" in sys.argv)
+    args = arguments()
+    main(args.subjects, args.year, args.force)

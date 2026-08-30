@@ -1,14 +1,39 @@
 #!/usr/bin/env python3
-"""Rank universities and fields of study by the exam score they admit on."""
+"""Write comparable school and school-major ability tables."""
+
+import re
 
 from lib import admissions
 from lib.paths import ranking_path
 from lib.percentile import percentile
 from lib.tsvio import write_rows
 
-UNIVERSITIES = ranking_path("rank-universities.tsv")
-FIELDS = ranking_path("rank-fields.tsv")
-ABILITY = ranking_path("ability-universities.tsv")
+UNIVERSITIES = ranking_path("ability-universities.tsv")
+MAJORS = ranking_path("ability-majors.tsv")
+
+TRANSLITERATION = str.maketrans({
+    **dict(zip("абвгдеёжзийклмнопрстуфхцчшщыэюя",
+               ("a", "b", "v", "g", "d", "e", "yo", "zh", "z", "i", "y", "k",
+                "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "kh",
+                "ts", "ch", "sh", "shch", "y", "e", "yu", "ya"))),
+    "ь": "", "ъ": "",
+})
+TRANSLITERATION.update({ord(char.upper()): value.capitalize()
+                        for char, value in zip(
+                            "абвгдеёжзийклмнопрстуфхцчшщыэюя",
+                            ("a", "b", "v", "g", "d", "e", "yo", "zh", "z", "i", "y", "k",
+                             "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "kh",
+                             "ts", "ch", "sh", "shch", "y", "e", "yu", "ya"))})
+ENGLISH_TERMS = (("Моск.", "Moscow"), ("С.-Петербург", "Saint Petersburg"),
+                 ("гос.", "State"), ("ун-т.", "University"),
+                 ("ин-т.", "Institute"), ("университет", "University"),
+                 ("академия", "Academy"), ("федеральный", "Federal"),
+                 ("национальный", "National"),
+                 ("исследовательский", "Research"),
+                 ("технический", "Technical"),
+                 ("медицинский", "Medical"),
+                 ("педагогический", "Pedagogical"),
+                 ("физико-техн.", "Physics and Technology"))
 
 
 def rounded(place):
@@ -22,66 +47,56 @@ def scored(level, year=None, funding=None):
             if row["scored_mean"] is not None]
 
 
-def ranked(level):
-    """Every group, ranked against the other groups of its year and route."""
-    out = []
-    for year in admissions.years(level):
-        for funding in ("budget", "paid"):
-            rows = sorted(scored(level, year, funding),
-                          key=lambda row: -row["scored_mean"])
-            for place, row in enumerate(rows, start=1):
-                entry = {"year": year, "funding": funding, "rank": place,
-                         "university": row["university"]}
-                if level == "field":
-                    entry["field"] = row["field"]
-                entry.update({
-                    "mean_ege": row["mean_ege"],
-                    "scored_mean": row["scored_mean"],
-                    "ability": rounded(percentile(row["scored_mean"], year)),
-                    "students": row["students"], "bvi": row["bvi"],
-                    "region": row["region"]})
-                out.append(entry)
-    return out
+def englishish(name):
+    """A cheap readable label: common terms translated, the rest romanized."""
+    for russian, english in ENGLISH_TERMS:
+        name = re.sub(re.escape(russian), english, name, flags=re.IGNORECASE)
+    return " ".join(name.translate(TRANSLITERATION).split())
 
 
-def ability(year):
-    """One row per university: the seat-weighted middle of both routes.
+def ability(level, year):
+    """One row per school or school-major: the middle of both funding routes.
 
     Budget and paid places go to different people, so a university's intake is
     the two together and its score is their weighted average.
     """
     totals = {}
-    for row in scored("university", year):
-        seats, name = row["students"], row["university"]
+    for row in scored(level, year):
+        seats, school = row["students"], row["university"]
+        major = row["field"] if level == "field" else None
+        key = (school, major)
         blank = {"seats": 0, "weighted": 0.0, "bvi": 0, "budget_seats": 0,
                  "region": row["region"]}
-        entry = totals.setdefault(name, blank)
+        entry = totals.setdefault(key, blank)
         entry["seats"] += seats
         entry["weighted"] += seats * row["scored_mean"]
         entry["bvi"] += row["bvi"]
         if row["funding"] == "budget":
             entry["budget_seats"] += seats
     rows = []
-    for name, entry in totals.items():
+    for (school, major), entry in totals.items():
         score = entry["weighted"] / entry["seats"]
-        rows.append({"year": year, "university": name, "region": entry["region"],
-                     "scored_mean": round(score, 2),
-                     "ability": rounded(percentile(score, year)),
-                     "seats": entry["seats"],
-                     "budget_seats": entry["budget_seats"], "bvi": entry["bvi"]})
-    rows.sort(key=lambda row: -row["scored_mean"])
+        row = {"school": school, "school_en": englishish(school)}
+        if major is not None:
+            row.update({"major": major, "major_en": englishish(major)})
+        row.update({"ability": rounded(percentile(score, year)),
+                    "seats": entry["seats"], "year": year,
+                    "budget_seats": entry["budget_seats"],
+                    "olympiad_seats": entry["bvi"], "region": entry["region"]})
+        rows.append(row)
+    rows.sort(key=lambda row: -row["ability"])
     for place, row in enumerate(rows, start=1):
         row["rank"] = place
+        row = {"rank": row.pop("rank"), **row}
+        rows[place - 1] = row
     return rows
 
 
 def main():
-    for level, target in (("university", UNIVERSITIES), ("field", FIELDS)):
-        rows = ranked(level)
-        print(f"wrote {write_rows(target, rows):,} rows to {target}")
     latest = max(admissions.years("university"))
-    rows = ability(latest)
-    print(f"wrote {write_rows(ABILITY, rows):,} universities to {ABILITY}")
+    for level, target in (("university", UNIVERSITIES), ("field", MAJORS)):
+        rows = ability(level, latest)
+        print(f"wrote {write_rows(target, rows):,} {level} rows to {target}")
 
 
 if __name__ == "__main__":

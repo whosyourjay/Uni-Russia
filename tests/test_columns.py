@@ -16,9 +16,9 @@ from parse import hse
 DECOYS = ("без вычета", "min ", "самого слабого", "самогослабого", "конкурсу")
 
 
-def mirrored():
+def downloaded():
     for level in ("university", "field"):
-        for year in hse.mirrored_years(level):
+        for year in hse.downloaded_years(level):
             for funding in hse.PLACES:
                 path = page_path(level, funding, year)
                 if os.path.exists(path):
@@ -26,9 +26,9 @@ def mirrored():
 
 
 class TestColumns(unittest.TestCase):
-    def test_every_mirrored_page_resolves_its_required_columns(self):
-        pages = list(mirrored())
-        self.assertTrue(pages, "no monitoring pages are mirrored")
+    def test_every_downloaded_page_resolves_its_required_columns(self):
+        pages = list(downloaded())
+        self.assertTrue(pages, "no monitoring pages are downloaded")
         for level, funding, year, path in pages:
             records = html.records(net.text(path))
             if not records:
@@ -39,7 +39,7 @@ class TestColumns(unittest.TestCase):
                     self.assertIn(role, roles)
 
     def test_the_average_column_is_never_one_of_its_decoys(self):
-        for level, funding, year, path in mirrored():
+        for level, funding, year, path in downloaded():
             records = html.records(net.text(path))
             if not records:
                 continue
@@ -52,7 +52,7 @@ class TestColumns(unittest.TestCase):
         # A few early field tables head their only headcount "Зачислено
         # человек" and leave the kind of place to the page, so the caption is
         # allowed to name this kind or neither — never the other one.
-        for level, funding, year, path in mirrored():
+        for level, funding, year, path in downloaded():
             records = html.records(net.text(path))
             if not records:
                 continue

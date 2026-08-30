@@ -62,7 +62,7 @@ def spread(axes, year):
     rows = universities(year)[:TOP]
     budget, paid = groups(year, "budget"), groups(year, "paid")
     for place, row in enumerate(rows):
-        name = row["university"]
+        name = row["school"]
         for source, color in ((budget, BUDGET), (paid, PAID)):
             for group in source.get(name, []):
                 axes.scatter(percentile(group["scored_mean"], year), place,
@@ -70,7 +70,7 @@ def spread(axes, year):
                              color=color, alpha=0.5, linewidths=0)
         axes.scatter(float(row["ability"]), place, s=40, color=MEAN, zorder=3)
     axes.set_yticks(range(len(rows)))
-    axes.set_yticklabels([shorten(row["university"]) for row in rows], fontsize=7)
+    axes.set_yticklabels([shorten(row["school"]) for row in rows], fontsize=7)
     axes.invert_yaxis()
     axes.set_xlabel("percentile of the exam cohort", fontsize=8, color=MUTED)
     axes.set_title(f"{year}: field groups behind a university average",
@@ -86,7 +86,7 @@ def olympiads(axes, year):
         seats = int(row["budget_seats"])
         if seats < 100:
             continue
-        share = 100.0 * int(row["bvi"]) / seats
+        share = 100.0 * int(row["olympiad_seats"]) / seats
         axes.scatter(float(row["ability"]), share, s=min(BIG, seats / 12.0),
                      color=MEAN, alpha=0.35, linewidths=0)
     axes.set_xlabel("university ability, percentile of the exam cohort",

@@ -49,17 +49,17 @@ def page_path(level, funding, year):
 
 
 def main(years=None, force=False):
-    net.mirror(INDEX, INDEX_PATH, force=force)
+    net.download(INDEX, INDEX_PATH, force=force)
     wanted = set(years or [])
     fetched = kept = 0
     for level, funding, year, url in reports(net.text(INDEX_PATH)):
         if wanted and year not in wanted:
             continue
-        if net.mirror(url, page_path(level, funding, year), force=force):
+        if net.download(url, page_path(level, funding, year), force=force):
             fetched += 1
         else:
             kept += 1
-    print(f"mirrored {fetched} rating pages, {kept} already present")
+    print(f"downloaded {fetched} rating pages, {kept} already present")
 
 
 if __name__ == "__main__":

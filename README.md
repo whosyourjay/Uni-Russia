@@ -1,7 +1,9 @@
-# Russia university admission difficulty
+# Russia postsecondary admission difficulty
 
-Ranks Russian universities and fields of study by the exam score they admit on.
-Nothing here reflects research output or reputation.
+Ranks Russian postsecondary schools and broad fields by the academic level they
+admit. The current pass covers universities; score-gated СПО colleges belong in
+the intended scope but have not yet been collected. Nothing here reflects
+research output or reputation.
 
 ## The admission system
 
@@ -32,18 +34,57 @@ until 2017 and has published one blended number since.
 | **Full-time first degree** | | **426,265** | **584,868** |
 
 `coverage.py` writes `data/source-coverage.tsv`, which records what each
-mirrored page publishes, including the columns the ranking does not read.
+downloaded page publishes, including the columns the ranking does not read.
 
-## What is out of scope
+## How ЕГЭ scores work
 
-The monitoring is a survey of full-time first-degree places won on the ЕГЭ,
-which leaves out most of the ways a Russian school leaver continues. Nothing
-here covers среднее профессиональное образование, the colleges and техникумы
-that take students after the ninth grade and select on the school-leaving
-certificate rather than the ЕГЭ; nor заочное and очно-заочное study, nor
-master's programmes, nor the military, police and arts institutions the
-monitoring excludes by design. Admission to a university on a college diploma
-rather than an exam result is inside the headcount and outside the score.
+ЕГЭ is a family of subject exams, not one test with subtests. Russian,
+profile-level mathematics, physics, chemistry, biology, history, geography,
+social studies, literature, informatics and foreign languages each produce
+their own score. A degree program names the three or four subjects it accepts,
+then ranks applicants on their sum. Basic-level mathematics is a school-leaving
+exam and is not the mathematics score used for university admission.
+
+Within a subject, tasks first produce a `primary score` under that year's
+marking rubric. FIPI converts it to a `test score` on the admission scale,
+normally 0–100. The conversion and maximum primary score differ by subject and
+can change by year. A university may add up to ten points for individual
+achievements, so an applicant usually competes on 300 or 400 ЕГЭ points plus
+those additions. The HSE monitoring divides that total by the number of
+subjects and removes the additions where the admission list identifies them.
+
+The downloaded FIPI index links 82 subject reports for 2019–2025. `fetch/fipi.py`
+downloads all of them by default, including separate 2025 language reports.
+Some reports publish a full primary- or test-score chart, while others publish
+only broad score bands or summary shares; downloading every report does not
+turn the missing charts into distributions.
+
+## What one published average means
+
+HSE publishes arithmetic means, not medians, at two levels: one for a whole
+institution and one for each institution–field pair. Its fields are 66 broad
+families rather than exact degree programs.
+
+For example, MIPT's 2025 budget row reports a 97.6 mean over 1,092 admits. Of
+those, 582 were БВИ olympiad admits for whom HSE inserted a placeholder 100.
+Removing those placeholders leaves 510 exam-taking admits with a 94.8612 mean.
+MIPT's paid row reports 90.9 over another 143 admits. The field download also
+separates its budget intake into Mathematics (98.6, 196 admits), Physics (97.4,
+560), Informatics and Computer Engineering (97.7, 251), Chemical and
+Biotechnology (98.2, 50), and Electronics and Communications (93.8, 35). These
+are still group means, not individual-score distributions.
+
+## Current coverage gaps
+
+The monitoring is a survey of full-time first-degree places won on the ЕГЭ.
+It leaves out среднее профессиональное образование: colleges and техникумы that
+take students after grades 9 or 11 and rank oversubscribed programs on the
+school-certificate average. That is a GPA-gated postsecondary route and belongs
+in this comparison. The current files contain none of its schools, intake or
+grade distributions. They also omit part-time study, master's programs, and
+military, police and arts institutions excluded by the monitoring. Admission
+to a university on a college diploma or its own exam is inside the headcount
+and outside the published ЕГЭ mean.
 
 ## The source
 
@@ -55,7 +96,7 @@ and averages that into a score per university and per field of study. It
 covers every institution admitting on the ЕГЭ, excluding the military and
 performing-arts ones, and only full-time first-degree places.
 
-`fetch/hse.py` mirrors both report families for every year the site indexes,
+`fetch/hse.py` downloads both report families for every year the site indexes,
 2011 through 2025, and `parse/hse.py` reads them into `data/admissions-*.tsv`,
 809 universities across 66 укрупнённые группы in 2025 alone. Captions are
 reworded almost every year, and each average is reprinted beside two decoys —
@@ -68,8 +109,8 @@ The monitoring gives a student admitted without exams a nominal 100 in every
 subject. That is a placeholder, not a measurement, and at the most selective
 universities it moves the average by several points, so `lib/admissions.py`
 takes those students back out of the average and leaves them in the headcount.
-Every table here ranks on `scored_mean`, the average over students who
-actually sat the subjects.
+The model calls the exam-taker average `scored_mean` internally. Public ranking
+tables export only its percentile, not the raw score.
 
 One more number rides along with the score and cannot be taken out. A Russian
 university adds up to ten points for individual achievements — a gold medal, a
@@ -125,22 +166,27 @@ seat-against-candidate check to run here: it would pass by definition.
 
 ## Outputs
 
-- `rankings/rank-universities.tsv` and `rankings/rank-fields.tsv`: every
-  university and укрупнённая группа, ranked inside its year and route, with the
-  published average, the average without olympiad winners, and the percentile.
-- `rankings/ability-universities.tsv`: one row per university for the latest
-  year, budget and paid places averaged by seat, which is the table `compare/`
-  would read.
+- `rankings/ability-universities.tsv`: one latest-year row per school, with
+  `school`, a rough `school_en`, percentile ability and seat counts. Raw ЕГЭ
+  means are not exported.
+- `rankings/ability-majors.tsv`: the same columns for each school and broad HSE
+  field, adding `major` and rough `major_en` labels. The source is coarser than
+  a true major even though the common output schema calls the column `major`.
 - `rankings/route_ability.tsv`: the same allocations split by route, with
   olympiad winners as their own route at the top of the scale.
 - `rankings/ability-spread.png`: what a university average covers, and how the
   olympiad route concentrates at the top.
 - `data/admissions-universities.tsv`, `data/admissions-fields.tsv`: the parsed
   monitoring, 2011–2025.
-- `data/ege-national.tsv`: exam participants and the national mean per year.
+- `data/ege-national.tsv`: compulsory-Russian participants and the national
+  mean per year.
+- `data/ege-report-coverage.tsv`: all 82 downloaded subject reports, their
+  parsed participant counts and means, and the pages carrying primary-score,
+  test-score or broad-band distributions. It is an audit of what FIPI
+  published, not a claim that every chart has numerical data behind it.
 - `data/cohort-steps.tsv`, `data/cohort-model.tsv`: the percentile walk and
   what it rests on.
-- `data/source-coverage.tsv`: what each of the 60 mirrored pages publishes,
+- `data/source-coverage.tsv`: what each of the 60 downloaded pages publishes,
   year by year, including columns the ranking does not read.
 
 ## Rebuilding
@@ -151,16 +197,16 @@ Set `PYTHON` to use a different interpreter. `parse/fipi.py` needs Poppler's
 `pdftotext`. The commands run separately as well:
 
     python3 -m fetch.hse            # 60 rating pages, half an hour cold
-    python3 -m fetch.fipi           # the compulsory Russian subject reports
+    python3 -m fetch.fipi           # all 82 linked subject reports
     python3 -m parse.hse            # data/admissions-*.tsv
-    python3 -m parse.fipi           # data/ege-national.tsv
+    python3 -m parse.fipi           # national counts and report coverage
     python3 coverage.py             # data/source-coverage.tsv
     python3 cohort.py               # the percentile walk and assessment-pool.tsv
-    python3 rank.py                 # rankings/rank-*.tsv
+    python3 rank.py                 # school and school-major ability tables
     python3 route_ability.py        # rankings/route_ability.tsv
     python3 plot.py                 # rankings/ability-spread.png
     python3 -m unittest discover
 
 `fetch.hse` takes years as arguments and `fetch.fipi` takes subject names, so
-one year or one subject can be refreshed alone; `--force` re-downloads what is
-already mirrored.
+one year or one subject can be refreshed alone; `--force` downloads a fresh
+copy of what is already present.

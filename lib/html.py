@@ -33,7 +33,7 @@ def result_table(page):
 
 
 def records(page):
-    """Header-keyed dictionaries for one mirrored rating page."""
+    """Header-keyed dictionaries for one downloaded rating page."""
     grid = [row for row in rows(result_table(page)) if row]
     header, body = grid[0], grid[1:]
     return [dict(zip(header, row)) for row in body if len(row) == len(header)]

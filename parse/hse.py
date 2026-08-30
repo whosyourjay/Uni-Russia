@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn the mirrored monitoring pages into one row per admitted group.
+"""Turn the downloaded monitoring pages into one row per admitted group.
 
 Fifteen years of tables reword their captions freely — the average score is a
 "средний балл" until 2015 and a "качество приема" after it, and each year
@@ -99,7 +99,7 @@ def value(record, roles, role, default=""):
 
 
 def read(level, funding, year):
-    """One mirrored page as ranking rows, dropping groups with no score."""
+    """One downloaded page as ranking rows, dropping groups with no score."""
     path = page_path(level, funding, year)
     if not os.path.exists(path):
         return
@@ -125,14 +125,14 @@ def read(level, funding, year):
                "id_deducted": value(record, roles, "id_deducted").lower()}
 
 
-def mirrored_years(level):
+def downloaded_years(level):
     """Every year whose page for this level is on disk."""
     found = glob.glob(source_path("hse", f"{level}-*-*.html"))
     return sorted({int(re.search(r"(\d{4})\.html$", p).group(1)) for p in found})
 
 
 def table(level):
-    for year in mirrored_years(level):
+    for year in downloaded_years(level):
         for funding in PLACES:
             yield from read(level, funding, year)
 

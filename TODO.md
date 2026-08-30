@@ -12,7 +12,7 @@ Order: impact first. “Done when” describes a published table, not a download
   distribution as a picture, and Rosobrnadzor, Rosstat and fedstat all refuse
   automated requests, so the numbers have to come from somewhere else —
   pooled regional statistical reports, an archived Rosobrnadzor release, or a
-  mirror. Done when a percentile comes from counted participants.
+  downloaded copy. Done when a percentile comes from counted participants.
 
 - [ ] **Spread each group around its average.** Short of a published
   distribution, the walk can put a group's students on a curve instead of on a
@@ -62,7 +62,7 @@ Order: impact first. “Done when” describes a published table, not a download
   `route_ability.py` names the quota a seat came through for the years that
   publish it, and the general-competition average is ranked where it exists.
 
-- [ ] **Mirror the region tables.** The rating pages filter by субъект РФ, so
+- [ ] **Download the region tables.** The rating pages filter by субъект РФ, so
   one request per region gives a regional breakdown the national page hides.
   A `Регион` column already survives in 2011 and 2014. Done when every
   university carries a region for every year.
@@ -80,13 +80,16 @@ Order: impact first. “Done when” describes a published table, not a download
 
 ## Reach past the monitoring — narrower payoff
 
-- [ ] **Count the sectors the monitoring never sees.** СПО takes most of the
-  ninth-grade cohort and selects on the school certificate, not the ЕГЭ; заочное
-  study, master's programmes, and the military, police and arts institutions are
-  outside too. None of them has a row anywhere here, so the project cannot say
-  what share of an age cohort a university seat represents. Done when each
-  excluded sector has an annual intake with a source, or a stated missing-data
-  label.
+- [ ] **Add score-gated СПО colleges.** СПО takes much of the ninth-grade cohort
+  and ranks oversubscribed programs on the school-certificate average rather
+  than ЕГЭ. Collect school–program intake and grade bars, then map them through a
+  certificate-grade distribution. Done when the school and major outputs include
+  СПО beside university routes with measured seat and ability coverage.
+
+- [ ] **Count the remaining sectors the monitoring never sees.** Part-time
+  study, master's programs, and military, police and arts institutions remain
+  outside. Done when each sector has an annual intake with a source or a stated
+  missing-data label, and every score-gated route is included.
 
 - [ ] **Find seat counts that are not intake counts.** The monitoring reports
   who was admitted, not the контрольные цифры приёма the ministry set. Done

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""What each mirrored monitoring page publishes, year by year.
+"""What each downloaded monitoring page publishes, year by year.
 
 The ranking reads four columns. The pages carry more than that in some years —
 the quota a seat came through, the score of the weakest admitted student, the
@@ -43,7 +43,7 @@ def published(headers, funding):
 
 def rows():
     for level in ("university", "field"):
-        for year in hse.mirrored_years(level):
+        for year in hse.downloaded_years(level):
             for funding in hse.PLACES:
                 path = page_path(level, funding, year)
                 if not os.path.exists(path):
