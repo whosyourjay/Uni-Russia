@@ -41,12 +41,6 @@ def rounded(place):
     return "" if place is None else round(place, 3)
 
 
-def scored(level, year=None, funding=None):
-    """Admitted groups that carry a usable average."""
-    return [row for row in admissions.cells(level, year, funding)
-            if row["scored_mean"] is not None]
-
-
 def englishish(name):
     """A cheap readable label: common terms translated, the rest romanized."""
     for russian, english in ENGLISH_TERMS:
@@ -54,28 +48,50 @@ def englishish(name):
     return " ".join(name.translate(TRANSLITERATION).split())
 
 
-def ability(level, year):
-    """One row per school or school-major: the middle of both funding routes.
+def weighted_median(groups):
+    """The ordinary median after expanding integer `(center, seats)` groups."""
+    ordered = sorted(groups)
+    total = sum(seats for _, seats in ordered)
+    targets = ((total - 1) // 2, total // 2)
+    values = []
+    seen = 0
+    for center, seats in ordered:
+        while len(values) < 2 and targets[len(values)] < seen + seats:
+            values.append(center)
+        seen += seats
+        if len(values) == 2:
+            break
+    return sum(values) / len(values)
 
-    Budget and paid places go to different people, so a university's intake is
-    the two together and its score is their weighted average.
+
+def ability(level, year):
+    """One row per school or school-major from route-by-field centers.
+
+    Each published subgroup mean stands in for that subgroup's median. BVI
+    olympiad seats are their own group at the top of the score scale.
     """
     totals = {}
-    for row in scored(level, year):
+    for row in admissions.cells("field", year):
         seats, school = row["students"], row["university"]
         major = row["field"] if level == "field" else None
         key = (school, major)
-        blank = {"seats": 0, "weighted": 0.0, "bvi": 0, "budget_seats": 0,
+        blank = {"seats": 0, "groups": [], "bvi": 0, "budget_seats": 0,
                  "region": row["region"]}
         entry = totals.setdefault(key, blank)
         entry["seats"] += seats
-        entry["weighted"] += seats * row["scored_mean"]
         entry["bvi"] += row["bvi"]
+        examined = seats - row["bvi"]
+        if examined > 0 and row["scored_mean"] is not None:
+            entry["groups"].append((row["scored_mean"], examined))
+        if row["bvi"]:
+            entry["groups"].append((100.0, row["bvi"]))
         if row["funding"] == "budget":
             entry["budget_seats"] += seats
     rows = []
     for (school, major), entry in totals.items():
-        score = entry["weighted"] / entry["seats"]
+        if not entry["groups"]:
+            continue
+        score = weighted_median(entry["groups"])
         row = {"school": school, "school_en": englishish(school)}
         if major is not None:
             row.update({"major": major, "major_en": englishish(major)})

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mirror the HSE admission-quality monitoring.
+"""Download a copy of the HSE admission-quality monitoring.
 
 The site indexes every published table from its own sidebar, so the year and
 report identifiers are read from the index rather than pinned here.

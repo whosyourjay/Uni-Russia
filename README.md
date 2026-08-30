@@ -15,6 +15,11 @@ won against the other applicants rather than against a fixed bar.
 
 A place is either бюджетное, paid by the state, or платное, paid by the
 student, and the two are separate competitions with separate results.
+For the same exact program the required ЕГЭ subjects and 0–100 scales are
+normally the same on both routes, but the paid list can therefore close lower.
+That is not admission without a gate: the applicant still has to meet the
+program's minimums and win a place on the paid list. Paid intake can also
+include applicants eligible to sit the university's own entrance tests.
 
 The budget places are not one competition either. Olympiad winners take theirs
 without sitting an exam at all, and the quotas — целевой приём for an employer
@@ -65,6 +70,14 @@ HSE publishes arithmetic means, not medians, at two levels: one for a whole
 institution and one for each institution–field pair. Its fields are 66 broad
 families rather than exact degree programs.
 
+The field file is crossed, not two separate summaries: a row identifies a
+year, institution, funding route and broad field. It therefore has, for
+example, a distinct `budget × Physics` mean and headcount. It does not identify
+the exact degree program, its required subjects or its closing score. A broad
+field can pool programs with different accepted ЕГЭ combinations, so budget
+and paid means are on the same per-subject 0–100 scale but are not necessarily
+means of exactly the same exams.
+
 For example, MIPT's 2025 budget row reports a 97.6 mean over 1,092 admits. Of
 those, 582 were БВИ olympiad admits for whom HSE inserted a placeholder 100.
 Removing those placeholders leaves 510 exam-taking admits with a 94.8612 mean.
@@ -72,7 +85,17 @@ MIPT's paid row reports 90.9 over another 143 admits. The field download also
 separates its budget intake into Mathematics (98.6, 196 admits), Physics (97.4,
 560), Informatics and Computer Engineering (97.7, 251), Chemical and
 Biotechnology (98.2, 50), and Electronics and Communications (93.8, 35). These
-are still group means, not individual-score distributions.
+are still group means, not individual-score distributions; 90.9 and 94.8612
+describe admitted cohorts, not their lower admission gates.
+
+For the two public ability tables, each route–field exam-taker mean is used as
+if it were that subgroup's median and repeated for its exam-taking headcount.
+БВИ seats form a separate subgroup at the top of the scale. The school value is
+the seat-weighted median across every such subgroup, and the school–major value
+is the same median within one broad field. This is a declared approximation:
+the source contains no individual scores from which to calculate a real
+median. School seat counts in those outputs come from the field file too, so
+they exclude the roughly 2% of intake for which HSE publishes no field row.
 
 ## Current coverage gaps
 
@@ -167,14 +190,15 @@ seat-against-candidate check to run here: it would pass by definition.
 ## Outputs
 
 - `rankings/ability-universities.tsv`: one latest-year row per school, with
-  `school`, a rough `school_en`, percentile ability and seat counts. Raw ЕГЭ
-  means are not exported.
+  `school`, a rough `school_en`, the route–field seat-weighted median expressed
+  as percentile ability, and seat counts. Raw ЕГЭ means are not exported.
 - `rankings/ability-majors.tsv`: the same columns for each school and broad HSE
-  field, adding `major` and rough `major_en` labels. The source is coarser than
-  a true major even though the common output schema calls the column `major`.
+  field, adding `major` and rough `major_en` labels and taking the weighted
+  median over that field's routes. The source is coarser than a true major even
+  though the common output schema calls the column `major`.
 - `rankings/route_ability.tsv`: the same allocations split by route, with
   olympiad winners as their own route at the top of the scale.
-- `rankings/ability-spread.png`: what a university average covers, and how the
+- `rankings/ability-spread.png`: what a school summary covers, and how the
   olympiad route concentrates at the top.
 - `data/admissions-universities.tsv`, `data/admissions-fields.tsv`: the parsed
   monitoring, 2011–2025.

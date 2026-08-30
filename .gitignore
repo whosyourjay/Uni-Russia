@@ -1,4 +1,4 @@
-# Mirrored sources. Modules under fetch/ re-download them.
+# Downloaded sources. Modules under fetch/ download fresh copies.
 sources/
 
 # Built by modules under parse/, by cohort.py and by rank.py.

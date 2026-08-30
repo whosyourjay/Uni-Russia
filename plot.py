@@ -1,4 +1,4 @@
-"""Draw what a university's `ability` averages over, and who never sat the exam.
+"""Draw what a school's median `ability` summarizes, and who skipped the exam.
 
 The left panel gives every field group its own dot, budget places against paid
 ones, so a university reads as the spread it is rather than the one number the
@@ -73,11 +73,11 @@ def spread(axes, year):
     axes.set_yticklabels([shorten(row["school"]) for row in rows], fontsize=7)
     axes.invert_yaxis()
     axes.set_xlabel("percentile of the exam cohort", fontsize=8, color=MUTED)
-    axes.set_title(f"{year}: field groups behind a university average",
+    axes.set_title(f"{year}: route–field groups behind a school median",
                    fontsize=9, color=INK)
     axes.scatter([], [], s=30, color=BUDGET, label="бюджетное место")
     axes.scatter([], [], s=30, color=PAID, label="платное место")
-    axes.scatter([], [], s=30, color=MEAN, label="published ability")
+    axes.scatter([], [], s=30, color=MEAN, label="weighted-median ability")
     axes.legend(fontsize=7, frameon=False, loc="upper left")
 
 
