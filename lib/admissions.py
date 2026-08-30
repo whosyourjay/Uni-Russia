@@ -1,9 +1,10 @@
-"""The parsed monitoring rows, and the one score every table ranks on.
+"""The parsed monitoring rows, and the score proxy every table ranks on.
 
 The monitoring gives a student admitted without entrance exams — an olympiad
 winner, БВИ — a nominal 100 in every subject. That is a placeholder rather
-than a measurement, so the score used here takes those students back out of
-the average while leaving them in the headcount.
+than a measurement, so the proxy used here algebraically takes those students
+back out while leaving them in the headcount. Current tables do not separately
+count university-test admits, so this is not an observed ЕГЭ-only mean.
 """
 
 import functools
@@ -29,12 +30,12 @@ def _table(level):
 
 
 def mean_excluding_bvi(row):
-    """The average over admitted students who actually sat the subjects."""
-    examined = row["students"] - row["bvi"]
-    if examined <= 0 or row["mean_ege"] is None:
+    """De-placeholder the group under a declared non-БВИ denominator proxy."""
+    non_bvi = row["students"] - row["bvi"]
+    if non_bvi <= 0 or row["mean_ege"] is None:
         return row["mean_ege"]
     total = row["mean_ege"] * row["students"] - 100.0 * row["bvi"]
-    return round(total / examined, 4)
+    return round(total / non_bvi, 4)
 
 
 def cells(level, year=None, funding=None):

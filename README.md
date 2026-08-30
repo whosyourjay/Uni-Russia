@@ -145,8 +145,9 @@ The monitoring gives a student admitted without exams a nominal 100 in every
 subject. That is a placeholder, not a measurement, and at the most selective
 universities it moves the average by several points, so `lib/admissions.py`
 takes those students back out of the average and leaves them in the headcount.
-The model calls the exam-taker average `scored_mean` internally. Public ranking
-tables export only its percentile, not the raw score.
+The model calls this de-placeholdered group proxy `scored_mean` internally for
+compatibility with the common loaders. Public ranking tables export only its
+percentile, not the raw score, and leave `observed_score_seats` blank.
 
 One more number rides along with the score and cannot be taken out. A Russian
 university adds up to ten points for individual achievements — a gold medal, a
@@ -189,8 +190,9 @@ percentile curve.
   median over that field's routes. The source is coarser than a true major even
   though the common output schema calls the column `major`.
 - `rankings/route_ability.tsv`: the same allocations split by route, with
-  olympiad winners retained without a numeric ability and marked explicitly for
-  the top-route comparison.
+  funding in its own column. ЕГЭ and university-test admits remain one
+  explicitly unseparated ranked route; olympiad winners retain their exact
+  count without a numeric ability and are marked for the top-route comparison.
 - `rankings/ability-spread.png`: what a school summary covers, and how the
   olympiad route concentrates at the top.
 - `data/admissions-universities.tsv`, `data/admissions-fields.tsv`: the parsed

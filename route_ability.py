@@ -7,10 +7,11 @@ from lib.percentile import percentile
 from lib.tsvio import write_rows
 
 TARGET = ranking_path("route_ability.tsv")
-# `compare/viz/routes.py` names the families; the route keeps the Russian name.
+# `compare/viz/routes.py` names the families; funding is a separate dimension.
 EXAM = "Exam score"
 OLYMPIAD = ("Talent and other", "Без вступительных испытаний")
-ROUTES = {"budget": "Бюджетные места", "paid": "Платные места"}
+COMPETITION = "ЕГЭ / внутренние испытания (не разделены)"
+FUNDING = {"budget": "Бюджетные места", "paid": "Платные места"}
 
 
 def rows(year=None):
@@ -24,14 +25,18 @@ def rows(year=None):
     for row in admissions.cells("field", year):
         if row["scored_mean"] is None:
             continue
-        examined = row["students"] - row["bvi"]
-        if examined > 0:
-            yield {"family": EXAM, "route": ROUTES[row["funding"]],
+        non_bvi = row["students"] - row["bvi"]
+        if non_bvi > 0:
+            yield {"family": EXAM, "route": COMPETITION,
+                   "funding": FUNDING[row["funding"]],
                    "ability": percentile(row["scored_mean"], year),
-                   "top": "", "seats": examined}
+                   "top": "", "seats": non_bvi,
+                   "observed_score_seats": ""}
         if row["bvi"]:
-            yield {"family": OLYMPIAD[0], "route": OLYMPIAD[1], "ability": None,
-                   "top": "yes", "seats": row["bvi"]}
+            yield {"family": OLYMPIAD[0], "route": OLYMPIAD[1],
+                   "funding": FUNDING[row["funding"]], "ability": None,
+                   "top": "yes", "seats": row["bvi"],
+                   "observed_score_seats": 0}
 
 
 def main():

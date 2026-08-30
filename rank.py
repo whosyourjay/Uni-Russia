@@ -41,8 +41,8 @@ def weighted_median(groups):
 def ability(level, year, english=None):
     """One row per school or school-major from route-by-field centers.
 
-    Each published exam-taker subgroup mean stands in for its median. BVI
-    olympiad seats remain a separate count because they have no EGE score.
+    Each de-placeholdered group proxy stands in for its median. BVI olympiad
+    seats remain a separate count because they have no ЕГЭ score.
     """
     source = admissions.cells("field", year)
     if english is None:
@@ -57,10 +57,10 @@ def ability(level, year, english=None):
         entry = totals.setdefault(key, blank)
         entry["seats"] += seats
         entry["bvi"] += row["bvi"]
-        examined = seats - row["bvi"]
-        if examined > 0 and row["scored_mean"] is not None:
-            entry["groups"].append((row["scored_mean"], examined))
-            entry["scored_seats"] += examined
+        non_bvi = seats - row["bvi"]
+        if non_bvi > 0 and row["scored_mean"] is not None:
+            entry["groups"].append((row["scored_mean"], non_bvi))
+            entry["scored_seats"] += non_bvi
         if row["funding"] == "budget":
             entry["budget_seats"] += seats
     rows = []
@@ -74,6 +74,7 @@ def ability(level, year, english=None):
         row.update({"ability": rounded(percentile(score, year)),
                     "seats": entry["seats"],
                     "scored_seats": entry["scored_seats"], "year": year,
+                    "observed_score_seats": "",
                     "budget_seats": entry["budget_seats"],
                     "olympiad_seats": entry["bvi"], "region": entry["region"]})
         rows.append(row)
