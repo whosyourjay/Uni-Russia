@@ -17,4 +17,6 @@ PYTHON=${PYTHON:-/usr/local/Caskroom/miniconda/base/bin/python3}
 "$PYTHON" rank.py
 "$PYTHON" route_ability.py
 "$PYTHON" plot.py
+"$PYTHON" -m viz
+"$PYTHON" -m pages.report
 "$PYTHON" -m unittest discover

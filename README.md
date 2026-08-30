@@ -195,6 +195,16 @@ percentile curve.
   count without a numeric ability and are marked for the top-route comparison.
 - `rankings/ability-spread.png`: what a school summary covers, and how the
   olympiad route concentrates at the top.
+- `rankings/bvi-placeholder-shift.png`: the institutions whose published
+  percentile moves most when nominal БВИ 100s are removed.
+- `rankings/budget-paid-gap.png`: seat density across matched budget and paid
+  university–field ability proxies.
+- `rankings/ege-distribution-calendar.png`: the subject-years with recovered
+  national distributions and the years for which the model carries them.
+- `rankings/spo-demand-gpa.png`: application pressure against budget entrant
+  certificate GPA for the retained СПО institution pages.
+- `rankings/ability-report.html`: a self-contained, interactive report that
+  presents those four admission-system figures as native SVG.
 - `data/admissions-universities.tsv`, `data/admissions-fields.tsv`: the parsed
   monitoring, 2011–2025.
 - `data/ege-national.tsv`: compulsory-Russian participants and the national
@@ -230,11 +240,13 @@ Set `PYTHON` to use a different interpreter. `parse/fipi.py` needs Poppler's
     python3 -m parse.fipi           # national counts and report coverage
     python3 -m parse.spo            # school-level СПО GPA and offered fields
     python3 coverage.py             # data/source-coverage.tsv
+    python3 -m pages.report         # rankings/ability-report.html
     python3 cohort.py               # annual empirical CDF and assessment pool
     python3 translate_names.py      # refresh the Google Translate label cache
     python3 rank.py                 # school and school-major ability tables
     python3 route_ability.py        # rankings/route_ability.tsv
     python3 plot.py                 # rankings/ability-spread.png
+    python3 -m viz                 # four admission-system figures
     python3 -m unittest discover
 
 English labels come from the local generated `data/name-english.tsv` cache.

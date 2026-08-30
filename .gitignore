@@ -4,8 +4,9 @@ sources/
 # Built by modules under parse/, by cohort.py and by rank.py.
 *.tsv
 
-# Built by plot.py.
+# Built by plot.py and the reporting modules.
 rankings/*.png
+/rankings/ability-report.html
 
 __pycache__/
 *.pyc

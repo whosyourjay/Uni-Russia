@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Russia's postsecondary admission landscape</title>
+<style>__CSS__</style>
+</head>
+<body>
+<div class="shell">
+<nav>
+  <h1>Russia admissions</h1>
+  <p class="sub">Olympiads, funding lists, ЕГЭ evidence, and СПО.</p>
+  <ol>
+    <li><a href="#bvi" class="on">БВИ and placeholder 100s</a></li>
+    <li><a href="#funding">Budget versus paid</a></li>
+    <li><a href="#ege">The ЕГЭ evidence calendar</a></li>
+    <li><a href="#spo">СПО demand and grades</a></li>
+  </ol>
+  <button id="theme" type="button">Use light theme</button>
+</nav>
+
+<main>
+<section class="fig" id="bvi">
+  <header>
+    <p class="eyebrow">Olympiad route · <span id="bvi-year"></span></p>
+    <h2>The perfect scores are administrative, not exam results.</h2>
+    <p class="lede">БВИ olympiad winners enter without an entrance exam, but HSE inserts
+      a nominal 100 into the institution average. Each line removes those placeholders
+      algebraically. The blue endpoint is a group proxy, not an observed ЕГЭ-only mean,
+      because university-test admits are not counted separately.</p>
+  </header>
+  <dl class="stat">
+    <div><dt>БВИ admits nationally</dt><dd id="bvi-total"></dd></div>
+    <div><dt>Largest shifts shown</dt><dd id="bvi-count"></dd></div>
+    <div><dt>Largest shift</dt><dd class="hot" id="bvi-largest"></dd></div>
+  </dl>
+  <div class="plot scroll"><svg id="bvi-svg" aria-label="Published and de-placeholdered university ability percentiles"></svg></div>
+  <div class="legend" id="bvi-legend"></div>
+</section>
+
+<section class="fig" id="funding">
+  <header>
+    <p class="eyebrow">Funding lists · <span id="funding-year"></span></p>
+    <h2>The test is the same; the queues are not.</h2>
+    <p class="lede">Budget and paid applicants normally submit the same required ЕГЭ
+      subjects but compete on separate ranked lists. Each point matches the two funding
+      pools inside one university and one HSE broad field; point size follows admitted
+      seats and the diagonal means equal selectivity.</p>
+  </header>
+  <dl class="stat">
+    <div><dt>Matched cohorts</dt><dd id="funding-count"></dd></div>
+    <div><dt>Matched seats</dt><dd id="funding-seats"></dd></div>
+    <div><dt>Budget list higher</dt><dd id="funding-higher"></dd></div>
+    <div><dt>Median gap</dt><dd class="hot" id="funding-gap"></dd></div>
+  </dl>
+  <div class="plot scroll"><svg id="funding-svg" aria-label="Budget and paid ability percentiles within matched fields"></svg></div>
+  <div class="legend" id="funding-legend"></div>
+  <p class="caption">Broad fields may pool exact programmes with different subject sets.
+    Values are de-placeholdered cohort proxies; university-test admits remain unseparated.</p>
+</section>
+
+<section class="fig" id="ege">
+  <header>
+    <p class="eyebrow">National reference curve · 2017–2025</p>
+    <h2>The ability scale has islands of evidence and long carries.</h2>
+    <p class="lede">The matrix distinguishes a reported mean, an unusable chart, recovered
+      score bands, and a recovered full curve. Only the blue cells feed the empirical CDF.
+      The strip below shows which observed year the ranking actually uses.</p>
+  </header>
+  <dl class="stat">
+    <div><dt>Recovered subject-years</dt><dd id="coverage-recovered"></dd></div>
+    <div><dt>Full score curves</dt><dd id="coverage-curves"></dd></div>
+    <div><dt>Carried model years</dt><dd class="hot" id="coverage-carried"></dd></div>
+  </dl>
+  <div class="plot scroll"><svg id="coverage-svg" aria-label="ЕГЭ distribution evidence by subject and year"></svg></div>
+  <div class="legend" id="coverage-legend"></div>
+  <p class="caption">The model averages the available single-subject distributions. It is
+    not an observed distribution of three- or four-subject admission totals.</p>
+</section>
+
+<section class="fig" id="spo">
+  <header>
+    <p class="eyebrow">College route · <span id="spo-year"></span></p>
+    <h2>College demand is visible; its seat denominator is not.</h2>
+    <p class="lede">СПО colleges and technical schools admit primarily on school-certificate
+      grades. Their standardized pages report entrant GPA and applications per budget place,
+      but not admitted headcounts. Each point is therefore a school, never a seat.</p>
+  </header>
+  <dl class="stat">
+    <div><dt>Schools plotted</dt><dd id="spo-count"></dd></div>
+    <div><dt>Pages retained / indexed</dt><dd id="spo-pages"></dd></div>
+    <div><dt>Both funding GPAs</dt><dd id="spo-paired"></dd></div>
+    <div><dt>Budget GPA higher</dt><dd class="hot" id="spo-higher"></dd></div>
+  </dl>
+  <div class="plot scroll"><svg id="spo-svg" aria-label="СПО application pressure and budget entrant GPA"></svg></div>
+  <div class="legend" id="spo-legend"></div>
+  <p class="caption">The retained pages are an incomplete download, so this describes the
+    collection rather than a national sample. Current enrollment is not treated as admission volume.</p>
+</section>
+
+<footer>Built from the generated HSE university tables, FIPI national exam reports,
+  cohort model, and retained 2023 СПО pages in this repository. No chart makes a network request.</footer>
+</main>
+</div>
+<div class="tooltip" id="tooltip"></div>
+<script id="page-data" type="application/json">__DATA__</script>
+<script>__JS__</script>
+</body>
+</html>
