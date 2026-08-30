@@ -83,6 +83,6 @@ Order: impact first. “Done when” describes a published table, not a download
   own broad families, which are coarser than a programme. Done when a table
   names a направление подготовки with its own code.
 
-- [ ] **Add Russia to `compare/`.** It needs `assessment-pool.tsv`, which is
+- [x] **Add Russia to `compare/`.** It needs `assessment-pool.tsv`, which is
   written, and an age-18 population row. Done when the seventh country appears
   in the shared figures.

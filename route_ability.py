@@ -18,10 +18,9 @@ def rows(year=None):
 
     A БВИ student is admitted on an olympiad result and never sits the subjects,
     so the monitoring writes 100 in place of a score. Here they keep their own
-    route at the top of the scale instead of lifting their programme's average.
+    route with no numeric ability instead of lifting a programme's estimate.
     """
     year = year or max(admissions.years("field"))
-    top = percentile(100.0, year)
     for row in admissions.cells("field", year):
         if row["scored_mean"] is None:
             continue
@@ -29,10 +28,10 @@ def rows(year=None):
         if examined > 0:
             yield {"family": EXAM, "route": ROUTES[row["funding"]],
                    "ability": percentile(row["scored_mean"], year),
-                   "seats": examined}
+                   "top": "", "seats": examined}
         if row["bvi"]:
-            yield {"family": OLYMPIAD[0], "route": OLYMPIAD[1], "ability": top,
-                   "seats": row["bvi"]}
+            yield {"family": OLYMPIAD[0], "route": OLYMPIAD[1], "ability": None,
+                   "top": "yes", "seats": row["bvi"]}
 
 
 def main():

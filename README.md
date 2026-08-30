@@ -177,7 +177,8 @@ percentile curve.
   median over that field's routes. The source is coarser than a true major even
   though the common output schema calls the column `major`.
 - `rankings/route_ability.tsv`: the same allocations split by route, with
-  olympiad winners as their own route at the top of the scale.
+  olympiad winners retained without a numeric ability and marked explicitly for
+  the top-route comparison.
 - `rankings/ability-spread.png`: what a school summary covers, and how the
   olympiad route concentrates at the top.
 - `data/admissions-universities.tsv`, `data/admissions-fields.tsv`: the parsed
