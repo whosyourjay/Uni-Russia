@@ -63,11 +63,12 @@ Order: impact first. “Done when” describes a published table, not a download
 
 ## Reach past the monitoring — narrower payoff
 
-- [ ] **Add score-gated СПО colleges.** СПО takes much of the ninth-grade cohort
-  and ranks oversubscribed programs on the school-certificate average rather
-  than ЕГЭ. Collect school–program intake and grade bars, then map them through a
-  certificate-grade distribution. Done when the school and major outputs include
-  СПО beside university routes with measured seat and ability coverage.
+- [ ] **Finish score-gated СПО colleges.** The standardized 2023 monitoring
+  pages are now downloaded and parsed into institution GPA indicators and
+  offered fields. They omit admitted headcounts and do not cross GPA with
+  fields. Find school–programme intake and grade bars, then map them through a
+  certificate-grade distribution. Done when the school and major outputs
+  include СПО beside university routes with measured seat and ability coverage.
 
 - [ ] **Count the remaining sectors the monitoring never sees.** Part-time
   study, master's programs, and military, police and arts institutions remain

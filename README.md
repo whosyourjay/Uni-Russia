@@ -1,42 +1,43 @@
 # Russia postsecondary admission difficulty
 
 Ranks Russian postsecondary schools and broad fields by the academic level they
-admit. The current pass covers universities; score-gated СПО colleges belong in
-the intended scope but have not yet been collected. Nothing here reflects
-research output or reputation.
+admit. The ranked pass covers universities; the official 2023 СПО institution
+monitoring is also downloaded and parsed, but cannot yet be placed on the same
+seat-weighted scale because its public school pages omit admission headcounts.
+Nothing here reflects research output or reputation.
 
 ## The admission system
 
-Almost every route into a Russian bachelor's or specialist programme runs on
-one score. School leavers sit the ЕГЭ in their final year, each subject marked
-out of 100, and a university admits on the total of the three or four subjects
-its programme names. It then publishes ranked competition lists, so a place is
-won against the other applicants rather than against a fixed bar.
+School leavers ordinarily sit the ЕГЭ in their final year, each subject marked
+out of 100. A programme names three or four subjects and ranks applicants on
+their total. The same programme normally asks for the same subjects whether a
+student seeks a state-funded or paid place. `Бюджетные места` and `Платные
+места` are therefore funding pools, not different tests; separate ranked lists
+let the paid list close lower.
 
-A place is either бюджетное, paid by the state, or платное, paid by the
-student, and the two are separate competitions with separate results.
-For the same exact program the required ЕГЭ subjects and 0–100 scales are
-normally the same on both routes, but the paid list can therefore close lower.
-That is not admission without a gate: the applicant still has to meet the
-program's minimums and win a place on the paid list. Paid intake can also
-include applicants eligible to sit the university's own entrance tests.
+Admission basis and funding are separate axes. БВИ olympiad winners enter
+without an entrance examination. Applicants in the target, special and
+separate budget quotas compete in separate lists, but normally still use ЕГЭ
+or an authorized university entrance test. Some vocational graduates, foreign
+applicants and other eligible categories may take a university's own tests,
+and some programmes add creative, professional or physical tests. The latest
+HSE table puts university-test admits in the headcount but does not count them
+separately and excludes their test results from its ЕГЭ average.
 
-The budget places are not one competition either. Olympiad winners take theirs
-without sitting an exam at all, and the quotas — целевой приём for an employer
-who has signed the student, особая квота for orphans and the disabled, and
-since 2023 отдельная квота for the families of serving soldiers — each run
-their own ranking at their own bar. The monitoring counted them separately
-until 2017 and has published one blended number since.
+The monitoring does count its two funding pools consistently:
 
-| Route | What it ranks on | 2017 | 2025 |
-| --- | --- | ---: | ---: |
-| Общий конкурс | ЕГЭ total, minus achievement points | 216,545 | — |
-| Олимпиады (БВИ) | An olympiad result; no exam is sat | 4,016 | 9,207 |
-| Особая квота | ЕГЭ, ranked inside the quota | 12,103 | — |
-| Целевой приём | ЕГЭ, ranked inside the employer's quota | 37,326 | — |
-| **Бюджетные места** | | **269,994** | **357,439** |
-| Платные места | ЕГЭ total, or the university's own test | 156,271 | 227,429 |
-| **Full-time first degree** | | **426,265** | **584,868** |
+| Funding pool | 2017 admitted | 2025 admitted |
+| --- | ---: | ---: |
+| State-funded | 269,994 | 357,439 |
+| Paid | 156,271 | 227,429 |
+| **Full-time first degree** | **426,265** | **584,868** |
+
+It does not offer a complete current partition by admission basis. In 2017 it
+separately printed 216,545 general-competition, 4,016 БВИ, 12,103 special-quota
+and 37,326 targeted admits. In 2025 it prints 9,207 БВИ admits but blends the
+other budget competitions. Counts of university-test and additional-test
+admits remain unknown. Broader ministry totals use different populations and
+must not be inserted as if they were unclassified rows of this table.
 
 `coverage.py` writes `data/source-coverage.tsv`, which records what each
 downloaded page publishes, including the columns the ranking does not read.
@@ -78,9 +79,11 @@ field can pool programs with different accepted ЕГЭ combinations, so budget
 and paid means are on the same per-subject 0–100 scale but are not necessarily
 means of exactly the same exams.
 
-For example, MIPT's 2025 budget row reports a 97.6 mean over 1,092 admits. Of
+For example, MIPT's 2025 budget row reports a 97.6 mean beside 1,092 admits. Of
 those, 582 were БВИ olympiad admits for whom HSE inserted a placeholder 100.
-Removing those placeholders leaves 510 exam-taking admits with a 94.8612 mean.
+Algebraically removing those placeholders leaves 510 non-БВИ seats with a
+94.8612 group proxy. The current table cannot prove that all 510 are ЕГЭ takers,
+because it does not separate any university-test admits from that headcount.
 MIPT's paid row reports 90.9 over another 143 admits. The field download also
 separates its budget intake into Mathematics (98.6, 196 admits), Physics (97.4,
 560), Informatics and Computer Engineering (97.7, 251), Chemical and
@@ -88,27 +91,36 @@ Biotechnology (98.2, 50), and Electronics and Communications (93.8, 35). These
 are still group means, not individual-score distributions; 90.9 and 94.8612
 describe admitted cohorts, not their lower admission gates.
 
-For the two public ability tables, each route–field exam-taker mean is used as
-if it were that subgroup's median and repeated for its exam-taking headcount.
+For the two public ability tables, each funding–field de-placeholdered mean is
+used as if it were that subgroup's median and repeated for its non-БВИ
+headcount.
 The school value is the seat-weighted median across those subgroups, and the
 school–major value is the same median within one broad field. БВИ seats have no
 ЕГЭ score, so they stay in `seats` and `olympiad_seats` but not the numeric
-median; `scored_seats` gives its denominator. This is a declared approximation:
-the source contains no individual scores from which to calculate a real
-median. School seat counts in those outputs come from the field file too, so
-they exclude the roughly 2% of intake for which HSE publishes no field row.
+median; `scored_seats` is the common output name for seats assigned that proxy,
+not a count of people whose individual ЕГЭ scores were observed. The true ЕГЭ
+score denominator is unpublished. This is a declared approximation: the source
+contains no individual scores from which to calculate a real median. School
+seat counts in those outputs come from the field file too, so they exclude the
+roughly 2% of intake for which HSE publishes no field row.
 
 ## Current coverage gaps
 
-The monitoring is a survey of full-time first-degree places won on the ЕГЭ.
-It leaves out среднее профессиональное образование: colleges and техникумы that
-take students after grades 9 or 11 and rank oversubscribed programs on the
-school-certificate average. That is a GPA-gated postsecondary route and belongs
-in this comparison. The current files contain none of its schools, intake or
-grade distributions. They also omit part-time study, master's programs, and
-military, police and arts institutions excluded by the monitoring. Admission
-to a university on a college diploma or its own exam is inside the headcount
-and outside the published ЕГЭ mean.
+The 2023 СПО monitoring index contains 4,424 colleges and техникумы. Their
+standardized institution pages publish overall, budget and paid mean
+school-certificate grades, the share of entrants at grade 4 or above,
+applications per 100 budget places, current enrollment and broad fields
+offered. They do not publish admitted headcounts, programme-level grades or a
+full certificate-grade distribution. Current enrollment is retained as stock,
+never relabeled as admission seats, and offered fields receive no invented
+score. National СПО bulletins supply intake and one grade threshold, but cannot
+connect either to an individual school.
+
+The remaining omissions include part-time study, master's programmes, and
+military, police and arts institutions excluded by HSE. Some of those sectors
+cannot currently be counted on the same full-time first-degree scope, much less
+scored. Admission to a university on a college diploma or its own exam is
+inside HSE's headcount and outside its published ЕГЭ mean.
 
 ## The source
 
@@ -195,6 +207,12 @@ percentile curve.
   and the observed year and subjects behind it.
 - `data/source-coverage.tsv`: what each of the 60 downloaded pages publishes,
   year by year, including columns the ranking does not read.
+- `data/spo-institutions.tsv`: one 2023 СПО institution per row, with published
+  certificate-grade indicators and blank admission-count columns where the
+  source supplies no count.
+- `data/spo-fields.tsv`: broad fields offered by each СПО institution. Its score
+  and admitted-student columns are deliberately blank because the public page
+  does not cross its GPA indicators with fields.
 
 ## Rebuilding
 
@@ -205,8 +223,10 @@ Set `PYTHON` to use a different interpreter. `parse/fipi.py` needs Poppler's
 
     python3 -m fetch.hse            # 60 rating pages, half an hour cold
     python3 -m fetch.fipi           # all 82 linked subject reports
+    python3 -m fetch.spo 2023       # standardized СПО institution pages
     python3 -m parse.hse            # data/admissions-*.tsv
     python3 -m parse.fipi           # national counts and report coverage
+    python3 -m parse.spo            # school-level СПО GPA and offered fields
     python3 coverage.py             # data/source-coverage.tsv
     python3 cohort.py               # annual empirical CDF and assessment pool
     python3 translate_names.py      # refresh the Google Translate label cache

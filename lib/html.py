@@ -41,6 +41,6 @@ def records(page):
 
 def links(page):
     """Every (href, text) pair on a page, in document order."""
-    pattern = re.compile(r'<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.S)
+    pattern = re.compile(r"<a[^>]*href=(['\"])(.*?)\1[^>]*>(.*?)</a>", re.S)
     return [(entities.unescape(href), strip(label))
-            for href, label in pattern.findall(page)]
+            for _, href, label in pattern.findall(page)]
