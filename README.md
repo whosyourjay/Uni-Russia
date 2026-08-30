@@ -90,9 +90,10 @@ describe admitted cohorts, not their lower admission gates.
 
 For the two public ability tables, each route–field exam-taker mean is used as
 if it were that subgroup's median and repeated for its exam-taking headcount.
-БВИ seats form a separate subgroup at the top of the scale. The school value is
-the seat-weighted median across every such subgroup, and the school–major value
-is the same median within one broad field. This is a declared approximation:
+The school value is the seat-weighted median across those subgroups, and the
+school–major value is the same median within one broad field. БВИ seats have no
+ЕГЭ score, so they stay in `seats` and `olympiad_seats` but not the numeric
+median; `scored_seats` gives its denominator. This is a declared approximation:
 the source contains no individual scores from which to calculate a real
 median. School seat counts in those outputs come from the field file too, so
 they exclude the roughly 2% of intake for which HSE publishes no field row.

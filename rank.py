@@ -41,8 +41,8 @@ def weighted_median(groups):
 def ability(level, year, english=None):
     """One row per school or school-major from route-by-field centers.
 
-    Each published subgroup mean stands in for that subgroup's median. BVI
-    olympiad seats are their own group at the top of the score scale.
+    Each published exam-taker subgroup mean stands in for its median. BVI
+    olympiad seats remain a separate count because they have no EGE score.
     """
     source = admissions.cells("field", year)
     if english is None:
@@ -52,16 +52,15 @@ def ability(level, year, english=None):
         seats, school = row["students"], row["university"]
         major = row["field"] if level == "field" else None
         key = (school, major)
-        blank = {"seats": 0, "groups": [], "bvi": 0, "budget_seats": 0,
-                 "region": row["region"]}
+        blank = {"seats": 0, "scored_seats": 0, "groups": [], "bvi": 0,
+                 "budget_seats": 0, "region": row["region"]}
         entry = totals.setdefault(key, blank)
         entry["seats"] += seats
         entry["bvi"] += row["bvi"]
         examined = seats - row["bvi"]
         if examined > 0 and row["scored_mean"] is not None:
             entry["groups"].append((row["scored_mean"], examined))
-        if row["bvi"]:
-            entry["groups"].append((100.0, row["bvi"]))
+            entry["scored_seats"] += examined
         if row["funding"] == "budget":
             entry["budget_seats"] += seats
     rows = []
@@ -73,7 +72,8 @@ def ability(level, year, english=None):
         if major is not None:
             row.update({"major": major, "major_en": english.get(major, "")})
         row.update({"ability": rounded(percentile(score, year)),
-                    "seats": entry["seats"], "year": year,
+                    "seats": entry["seats"],
+                    "scored_seats": entry["scored_seats"], "year": year,
                     "budget_seats": entry["budget_seats"],
                     "olympiad_seats": entry["bvi"], "region": entry["region"]})
         rows.append(row)
