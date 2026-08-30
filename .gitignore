@@ -1,0 +1,13 @@
+# Mirrored sources. Modules under fetch/ re-download them.
+sources/
+
+# Built by modules under parse/, by cohort.py and by rank.py.
+*.tsv
+
+# Built by plot.py.
+rankings/*.png
+
+__pycache__/
+*.pyc
+.DS_Store
+*.swp

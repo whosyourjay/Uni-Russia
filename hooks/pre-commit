@@ -1,0 +1,15 @@
+#!/bin/sh
+# Run this project's tests before a commit lands. `SKIP_TESTS=1 git commit ...`
+# to bypass. Install with:
+#   ln -s ../../hooks/pre-commit "$(git rev-parse --git-path hooks)/pre-commit"
+[ -n "$SKIP_TESTS" ] && exit 0
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+python=${PYTHON:-/usr/local/Caskroom/miniconda/base/bin/python3}
+"$python" -m unittest discover -q || {
+    echo
+    echo "tests failed, so nothing was committed."
+    echo "SKIP_TESTS=1 git commit ... commits anyway."
+    exit 1
+}
