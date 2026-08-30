@@ -10,8 +10,9 @@ import os
 import re
 
 from lib.paths import data_path, source_path
-from lib.pdf import pdf_text
+from lib.pdf import clean_text, pdf_text
 from lib.tsvio import write_rows
+from parse.fipi_distributions import write_distributions
 
 TARGET = data_path("ege-national.tsv")
 COVERAGE = data_path("ege-report-coverage.tsv")
@@ -32,11 +33,6 @@ DISTRIBUTIONS = {
         r"(?:диапазон\w*\s+тестов\w*\s+балл|"
         r"распредел\w*.{0,100}(?:групп|диапазон)\w*\s+балл)", re.I | re.S),
 }
-
-
-def clean(text):
-    """Reports break a long line and space their thousands."""
-    return " ".join(text.split())
 
 
 def participants(text):
@@ -64,7 +60,7 @@ def reports(subject="*"):
 
 def national_rows():
     for year, _, path in reports("russian"):
-        text = clean(pdf_text(path))
+        text = clean_text(pdf_text(path))
         count, rounded = participants(text)
         if count is None:
             continue
@@ -81,7 +77,7 @@ def matching_pages(text, pattern):
 def coverage_rows():
     for year, subject, path in reports():
         text = pdf_text(path)
-        normalized = clean(text)
+        normalized = clean_text(text)
         count, rounded = participants(normalized)
         yield {"year": year, "subject": subject,
                "participants": count or "", "rounded": rounded,
@@ -96,6 +92,7 @@ def main():
     coverage = list(coverage_rows())
     print(f"wrote {write_rows(TARGET, national):,} years to {TARGET}")
     print(f"wrote {write_rows(COVERAGE, coverage):,} reports to {COVERAGE}")
+    write_distributions()
 
 
 if __name__ == "__main__":

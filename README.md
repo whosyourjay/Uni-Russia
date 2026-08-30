@@ -144,48 +144,27 @@ points. `id_deducted` marks which rows those are.
 
 ## Placing a score on the cohort
 
-Russia publishes no national distribution of exam scores in a form a program
-can read. FIPI draws it as a picture in each subject report, and Rosobrnadzor,
-Rosstat and fedstat all refuse automated requests. What is published is every
-admitted group's average and headcount, and the size of the exam cohort.
+FIPI's reports contain national distributions for single subjects only. The
+parser recovers 36 subject-year tables with shares in the bands 0–20, 21–40,
+41–60, 61–80 and 81–100, plus the full vector test-score curve for Russian in
+2023. Historical rows printed in later reports extend the observations to
+2017, producing 37 subject-year distributions through 2023.
 
-`cohort.py` walks the groups from the highest average down, accumulating
-headcounts, which gives each score the rank it reaches — the same shape as a
-Chinese 一分一段 table, built from the admitted side. It walks the field tables
-rather than the university ones, which are coarser; that costs the 2% of the
-intake sitting in groups too small for a field row. `data/cohort-steps.tsv`
-holds the result, `lib/percentile.py` is the only place that reads it, and
-every `ability` column in `rankings/` comes through that one function.
+`cohort.py` linearly interpolates each subject CDF and takes their equal-weight
+mean within a year. This empirical marginal CDF places HSE's per-subject score;
+it is not an observed distribution of three- or four-subject combined scores,
+and it does not adjust for the subjects an exact program requires. Years with
+no distribution use the nearest observed year: 2011–2016 use 2017, and
+2024–2025 use 2023. Sparse years remain sparse—2017 has History only, 2022 has
+Informatics only, and 2023 has Informatics and Russian.
 
-The base it divides by is the number of people who sat the compulsory Russian
-paper, which `parse/fipi.py` reads out of the FIPI subject report: 655,000 in
-2025. `assessment-pool.tsv` carries that number for `compare/`. FIPI's
-analytical materials start at 2019, so the years before it are ranked on the
-published average alone and their `ability` column is empty.
-
-Two assumptions hold the construction up, and both are visible in
-`data/cohort-model.tsv`. They push the ranking in opposite directions.
-
-An admitted student is placed where their group's average is placed. A group
-averaging 90 holds students at 84 and at 96, and all of them land on 90, so
-the tails flatten and the top of the scale runs short of people. Phystech's
-2025 average of 94.4 reads as the 99.80th percentile, the top 1,310 of the
-cohort, while its own non-olympiad intake alone puts about 330 students above
-that score; every other university's high scorers are hidden inside groups
-whose average is lower. The error is a few tenths of a percentile point at the
-very top and falls away quickly below it, and it never reorders anything,
-because a percentile here is monotone in the score it came from.
-
-Every admitted student is also counted as an exam participant, which the
-monitoring's headcount does not promise — it counts admits on a college
-diploma and on a university's own test too. In 2011, the one year the
-monitoring published the count, 210,572 of the 272,006 budget admits had a
-readable exam total, 77% of the headcount. That puts 87% of the 2025 exam
-cohort into a full-time first-degree place, too many, and pushes every
-percentile down.
-
-The construction makes seats fill the cohort exactly, so there is no
-seat-against-candidate check to run here: it would pass by definition.
+`data/cohort-model.tsv` records that carry and the contributing subjects.
+`data/cohort-steps.tsv` holds the resulting annual CDF, and every public
+`ability` value passes through `lib/percentile.py`. MIPT's 2025 weighted-median
+score proxy of 96.6537 becomes the 98.487th percentile on the carried 2023
+reference. The 655,000 people who sat compulsory Russian in 2025 remain the
+population count in `assessment-pool.tsv`; seat counts no longer construct the
+percentile curve.
 
 ## Outputs
 
@@ -208,8 +187,10 @@ seat-against-candidate check to run here: it would pass by definition.
   parsed participant counts and means, and the pages carrying primary-score,
   test-score or broad-band distributions. It is an audit of what FIPI
   published, not a claim that every chart has numerical data behind it.
-- `data/cohort-steps.tsv`, `data/cohort-model.tsv`: the percentile walk and
-  what it rests on.
+- `data/ege-score-distributions.tsv`: recovered single-subject empirical CDFs
+  with their report, year and extraction method.
+- `data/cohort-steps.tsv`, `data/cohort-model.tsv`: the annual reference CDF
+  and the observed year and subjects behind it.
 - `data/source-coverage.tsv`: what each of the 60 downloaded pages publishes,
   year by year, including columns the ranking does not read.
 
@@ -218,14 +199,14 @@ seat-against-candidate check to run here: it would pass by definition.
     ./rebuild.sh
 
 Set `PYTHON` to use a different interpreter. `parse/fipi.py` needs Poppler's
-`pdftotext`. The commands run separately as well:
+`pdftotext` and `pdftocairo`. The commands run separately as well:
 
     python3 -m fetch.hse            # 60 rating pages, half an hour cold
     python3 -m fetch.fipi           # all 82 linked subject reports
     python3 -m parse.hse            # data/admissions-*.tsv
     python3 -m parse.fipi           # national counts and report coverage
     python3 coverage.py             # data/source-coverage.tsv
-    python3 cohort.py               # the percentile walk and assessment-pool.tsv
+    python3 cohort.py               # annual empirical CDF and assessment pool
     python3 rank.py                 # school and school-major ability tables
     python3 route_ability.py        # rankings/route_ability.tsv
     python3 plot.py                 # rankings/ability-spread.png

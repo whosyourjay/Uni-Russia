@@ -1,49 +1,77 @@
 #!/usr/bin/env python3
-"""Turn the admitted population into a score-to-percentile table.
+"""Build an annual score CDF from FIPI's single-subject distributions.
 
-Russia publishes no national distribution of exam scores in machine-readable
-form: the FIPI subject reports draw it as a picture, and the statistical
-services that hold the numbers refuse automated requests. What is published is
-every admitted group's average and headcount, and the size of the exam cohort.
-Walking the groups from the highest average down gives a rank for each score,
-the same shape as a Chinese 一分一段 table, on two assumptions: an admitted
-student ranks where the group's average ranks, and every one of them sat this
-year's exam.
+An annual reference is the equal-weight mean of every subject CDF recovered for
+that year. Admission years without observations use the nearest empirical year.
+This is a reference for the HSE per-subject score, not an observed distribution
+of applicants' three- or four-subject averages.
 """
 
 from lib import admissions
 from lib.paths import data_path, path
+from lib.percentile import interpolate
 from lib.tsvio import number, read_rows, write_rows
 
 NATIONAL = data_path("ege-national.tsv")
+DISTRIBUTIONS = data_path("ege-score-distributions.tsv")
 STEPS = data_path("cohort-steps.tsv")
 MODEL = data_path("cohort-model.tsv")
 POOL = path("assessment-pool.tsv")
 
 
 def exam_cohort():
-    """Exam participants per year, from the compulsory Russian paper."""
+    """Compulsory Russian-paper participants where FIPI publishes the count."""
     return {int(row["year"]): number(row["participants"])
             for row in read_rows(NATIONAL)}
 
 
-def admitted(year):
-    """Every admitted group of the year, at the finest level published."""
-    return [row for row in admissions.cells("field", year)
-            if row["scored_mean"] is not None]
+def empirical_cdfs():
+    """Ascending `(score, percentile)` points by exam year and subject."""
+    found = {}
+    for row in read_rows(DISTRIBUTIONS):
+        key = int(row["year"]), row["subject"]
+        found.setdefault(key, {"points": [], "method": row["method"]})
+        found[key]["points"].append((float(row["score"]),
+                                      float(row["percentile"])))
+    return found
 
 
-def steps(year, base):
-    """One row per distinct score, carrying the rank that score reaches."""
-    totals = {}
-    for row in admitted(year):
-        score = round(row["scored_mean"], 1)
-        totals[score] = totals.get(score, 0) + row["students"]
-    above = 0
-    for score in sorted(totals, reverse=True):
-        above += totals[score]
-        yield {"year": year, "score": score, "admits_at_or_above": above,
-               "percentile": round(100.0 * (1.0 - above / base), 4)}
+def nearest_year(year, available):
+    """Closest observation, preferring the earlier one on a tie."""
+    return min(available, key=lambda candidate: (abs(candidate - year),
+                                                  candidate > year, candidate))
+
+
+def annual_reference(year, cdfs):
+    """The year used and its subject distributions."""
+    available = sorted({exam_year for exam_year, _ in cdfs})
+    source_year = nearest_year(year, available)
+    subjects = {subject: value for (exam_year, subject), value in cdfs.items()
+                if exam_year == source_year}
+    return source_year, subjects
+
+
+def steps(year, source_year, subjects):
+    """Mean subject CDF at every integer score on the common test scale."""
+    names = ",".join(sorted(subjects))
+    for score in range(101):
+        values = [interpolate(value["points"], score)
+                  for value in subjects.values()]
+        yield {"year": year, "score": score,
+               "percentile": round(sum(values) / len(values), 4),
+               "distribution_year": source_year, "subjects": names}
+
+
+def model_row(year, source_year, subjects, cohorts):
+    """Audit which empirical distributions support one admission year."""
+    methods = [value["method"] for value in subjects.values()]
+    return {"year": year, "distribution_year": source_year,
+            "carried": "no" if year == source_year else "yes",
+            "subject_distributions": len(subjects),
+            "subjects": ",".join(sorted(subjects)),
+            "vector_curves": methods.count("digitized vector curve"),
+            "band_tables": methods.count("published 20-point bands"),
+            "exam_cohort": int(cohorts[year]) if year in cohorts else ""}
 
 
 def pool_row(year, base):
@@ -54,29 +82,17 @@ def pool_row(year, base):
                       "the compulsory paper every school leaver sits"}
 
 
-def whole_intake(year):
-    """Scored admits counted at the university level, which the field tables
-    fall short of because a small group gets no field row of its own."""
-    return sum(row["students"] for row in admissions.cells("university", year)
-               if row["scored_mean"] is not None)
-
-
 def main():
-    base = exam_cohort()
+    cohorts, cdfs = exam_cohort(), empirical_cdfs()
     table, model = [], []
-    for year in sorted(set(admissions.years("field")) & set(base)):
-        rows = list(steps(year, base[year]))
-        walked, intake = rows[-1]["admits_at_or_above"], whole_intake(year)
-        table.extend(rows)
-        model.append({"year": year, "exam_cohort": int(base[year]),
-                      "scored_admits": walked, "whole_intake": intake,
-                      "field_coverage": round(walked / intake, 4),
-                      "admitted_share": round(walked / base[year], 4),
-                      "lowest_percentile": rows[-1]["percentile"]})
-    print(f"wrote {write_rows(STEPS, table):,} score steps to {STEPS}")
+    for year in admissions.years("field"):
+        source_year, subjects = annual_reference(year, cdfs)
+        table.extend(steps(year, source_year, subjects))
+        model.append(model_row(year, source_year, subjects, cohorts))
+    print(f"wrote {write_rows(STEPS, table):,} CDF points to {STEPS}")
     print(f"wrote {write_rows(MODEL, model):,} years to {MODEL}")
-    latest = model[-1]["year"]
-    write_rows(POOL, [pool_row(latest, base[latest])])
+    latest = max(set(admissions.years("field")) & set(cohorts))
+    write_rows(POOL, [pool_row(latest, cohorts[latest])])
     print(f"wrote the {latest} assessment pool to {POOL}")
 
 

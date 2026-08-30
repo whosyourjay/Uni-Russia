@@ -4,15 +4,9 @@ Order: impact first. “Done when” describes a published table, not a download
 
 ## Put the percentile on measured ground — highest impact
 
-- [ ] **Replace the derived step table with a published score distribution.**
-  `cohort.py` builds `data/cohort-steps.tsv` out of the admitted groups
-  themselves, on the assumption that a student ranks where their group's
-  average ranks. That flattens both tails: a group averaging 90 holds students
-  at 84 and at 96, and the table puts all of them at 90. FIPI draws the real
-  distribution as a picture, and Rosobrnadzor, Rosstat and fedstat all refuse
-  automated requests, so the numbers have to come from somewhere else —
-  pooled regional statistical reports, an archived Rosobrnadzor release, or a
-  downloaded copy. Done when a percentile comes from counted participants.
+- [x] **Replace the derived step table with published score distributions.**
+  FIPI supplies 36 subject-year band tables and one digitized full curve.
+  `cohort.py` now builds percentiles from those participant distributions.
 
 - [ ] **Spread each group around its average.** Short of a published
   distribution, the walk can put a group's students on a curve instead of on a
@@ -23,25 +17,14 @@ Order: impact first. “Done when” describes a published table, not a download
   gap overstates the ordinary spread. Done when the width has a source and the
   ranking states how far it moved the top.
 
-- [ ] **Take the non-exam entrants out of the cumulative count.** The
-  monitoring counts every admitted student in its headcount but scores only
-  those with a computable exam result. Admits on a college diploma, on a
-  university's own test, and last year's graduates are all in the denominator
-  now, which pushes every percentile down. The size is measurable in one year:
-  the 2011 field table publishes both, and 210,572 of 272,006 budget admits had
-  a readable total, 77%. Done when `data/cohort-model.tsv` reports scored
-  admits separately from total intake for every year.
-
-- [ ] **Weight the cohort base by the subjects a field asks for.** A student
-  ranks against everyone who sat Russian, not against everyone who sat the
-  three subjects their programme counted. Done when a field's percentile
-  states which pool it ranks inside.
+- [ ] **Weight the reference by the subjects a field asks for.** The current
+  CDF gives every available subject equal weight. Done when an exact program's
+  required subjects determine its reference distribution.
 
 - [ ] **Find the exam cohort before 2019.** FIPI's analytical materials start
-  at 2019, so `data/ege-national.tsv` does too, and the 2011–2018 rankings
-  carry a score with no percentile beside it. Each report quotes the year
-  before it, and archived Rosobrnadzor releases cover the rest. Done when every
-  ranked year has a participant count with a source.
+  at 2019, so `data/ege-national.tsv` does too. Percentiles now carry the
+  nearest distribution, but the comparison population still lacks a sourced
+  count for 2011–2018.
 
 ## Recover what the monitoring already published — modest work
 
