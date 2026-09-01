@@ -5,8 +5,9 @@ table that needs a percentile comes through here, so interpolation has one
 definition.
 """
 
-import bisect
 import functools
+
+from uniability import Curve
 
 from lib.paths import data_path
 from lib.tsvio import read_rows
@@ -21,21 +22,14 @@ def table():
     for row in read_rows(STEPS):
         years.setdefault(int(row["year"]), []).append(
             (float(row["score"]), float(row["percentile"])))
-    return {year: sorted(points) for year, points in years.items()}
+    return {year: Curve(points, "linear", lower="hold", upper="hold")
+            for year, points in years.items()}
 
 
 def interpolate(points, score):
     """Linearly interpolate an ascending sequence of `(score, percentile)`."""
-    scores = [point[0] for point in points]
-    place = bisect.bisect_left(scores, score)
-    if place == 0:
-        return points[0][1]
-    if place >= len(points):
-        return points[-1][1]
-    (low, below), (high, above) = points[place - 1], points[place]
-    if high == low:
-        return above
-    return below + (above - below) * (score - low) / (high - low)
+    curve = points if isinstance(points, Curve) else Curve(points)
+    return curve.rank(score)
 
 
 def percentile(score, year):

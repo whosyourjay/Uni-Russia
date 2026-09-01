@@ -1,2 +1,3 @@
 matplotlib
 deep-translator
+uniability @ git+https://github.com/whosyourjay/Uni-Compare.git@1aaac59
