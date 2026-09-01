@@ -29,9 +29,18 @@ class TestPercentile(unittest.TestCase):
     def test_every_percentile_stays_on_the_scale(self):
         for _ in range(FUZZ):
             year = random.choice(self.years)
-            found = percentile.percentile(random.uniform(-20.0, 120.0), year)
+            points = percentile.table()[year]
+            found = percentile.percentile(
+                random.uniform(points[0][0], points[-1][0]), year
+            )
             self.assertGreaterEqual(found, 0.0)
             self.assertLessEqual(found, 100.0)
+
+    def test_scores_outside_the_measured_curve_are_missing(self):
+        for year in self.years:
+            points = percentile.table()[year]
+            self.assertIsNone(percentile.percentile(points[0][0] - 1, year))
+            self.assertIsNone(percentile.percentile(points[-1][0] + 1, year))
 
     def test_a_published_step_returns_its_own_percentile(self):
         for year in self.years:

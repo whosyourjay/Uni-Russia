@@ -26,6 +26,12 @@ Order: impact first. “Done when” describes a published table, not a download
   nearest distribution, but the comparison population still lacks a sourced
   count for 2011–2018.
 
+- [ ] **Recover admitted averages outside the measured exam curve.** They now
+  count as unscored coverage instead of inheriting an endpoint percentile.
+  Separate achievement points, mixed-subject averages, and borrowed-year CDF
+  gaps; recover a percentile only where the underlying exam score can be
+  reconstructed.
+
 ## Recover what the monitoring already published — modest work
 
 - [ ] **Fix the 2011 and 2012 university tables.** They serve four rows and

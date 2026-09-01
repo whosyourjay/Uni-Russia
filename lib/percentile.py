@@ -22,7 +22,7 @@ def table():
     for row in read_rows(STEPS):
         years.setdefault(int(row["year"]), []).append(
             (float(row["score"]), float(row["percentile"])))
-    return {year: Curve(points, "linear", lower="hold", upper="hold")
+    return {year: Curve(points, "linear", lower="missing", upper="missing")
             for year, points in years.items()}
 
 
@@ -35,7 +35,8 @@ def interpolate(points, score):
 def percentile(score, year):
     """The empirical share at or below a score in the year's reference CDF.
 
-    Between two points the CDF is linear; outside them it holds at the nearest.
+    Between two points the CDF is linear; scores outside the measured curve are
+    missing rather than being promoted to an extreme percentile.
     """
     points = table().get(year)
     if not points or score is None:
