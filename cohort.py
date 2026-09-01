@@ -7,7 +7,7 @@ This is a reference for the HSE per-subject score, not an observed distribution
 of applicants' three- or four-subject averages.
 """
 
-from uniability import Scale
+from uniability import Scale, nearest_year
 
 from lib import admissions
 from lib.paths import data_path, path
@@ -38,16 +38,10 @@ def empirical_cdfs():
     return found
 
 
-def nearest_year(year, available):
-    """Closest observation, preferring the earlier one on a tie."""
-    return min(available, key=lambda candidate: (abs(candidate - year),
-                                                  candidate > year, candidate))
-
-
 def annual_reference(year, cdfs):
     """The year used and its subject distributions."""
     available = sorted({exam_year for exam_year, _ in cdfs})
-    source_year = nearest_year(year, available)
+    source_year = nearest_year(available, year)
     subjects = {subject: value for (exam_year, subject), value in cdfs.items()
                 if exam_year == source_year}
     return source_year, subjects
