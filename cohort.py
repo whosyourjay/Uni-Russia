@@ -7,6 +7,8 @@ This is a reference for the HSE per-subject score, not an observed distribution
 of applicants' three- or four-subject averages.
 """
 
+from uniability import Scale
+
 from lib import admissions
 from lib.paths import data_path, path
 from lib.percentile import interpolate
@@ -76,10 +78,12 @@ def model_row(year, source_year, subjects, cohorts):
 
 def pool_row(year, base):
     """The one line `compare/` reads to place this scale on a population."""
-    return {"year": year, "percentile_counts": "ЕГЭ", "B": int(base),
-            "B_display": f"{round(base / 1000):,}k", "cohort_scaled": "no",
-            "source": "Russian-language EGE participants in the main period, "
-                      "the compulsory paper every school leaver sits"}
+    return Scale(
+        "pooled", "RU", "test", "ЕГЭ", year, int(base),
+        f"{round(base / 1000):,}k", "high", False,
+        "Russian-language EGE participants in the main period, the compulsory "
+        "paper every school leaver sits",
+    ).as_row()
 
 
 def main():
