@@ -36,11 +36,15 @@ class TestPercentile(unittest.TestCase):
             self.assertGreaterEqual(found, 0.0)
             self.assertLessEqual(found, 100.0)
 
-    def test_scores_outside_the_measured_curve_are_missing(self):
+    def test_outside_policy_depends_on_whether_the_curve_was_carried(self):
         for year in self.years:
             points = percentile.table()[year]
-            self.assertIsNone(percentile.percentile(points[0][0] - 1, year))
-            self.assertIsNone(percentile.percentile(points[-1][0] + 1, year))
+            outside = (percentile.percentile(points[0][0] - 1, year),
+                       percentile.percentile(points[-1][0] + 1, year))
+            if points.metadata["carried"]:
+                self.assertEqual(outside, (points[0][1], points[-1][1]))
+            else:
+                self.assertEqual(outside, (None, None))
 
     def test_a_published_step_returns_its_own_percentile(self):
         for year in self.years:

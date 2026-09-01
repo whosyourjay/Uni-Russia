@@ -20,10 +20,21 @@ def table():
     """Ascending (score, percentile) points per year."""
     years = {}
     for row in read_rows(STEPS):
-        years.setdefault(int(row["year"]), []).append(
-            (float(row["score"]), float(row["percentile"])))
-    return {year: Curve(points, "linear", lower="missing", upper="missing")
-            for year, points in years.items()}
+        year = int(row["year"])
+        source_year = int(row.get("distribution_year") or year)
+        entry = years.setdefault(year, {"points": [], "source_year": source_year})
+        if entry["source_year"] != source_year:
+            raise ValueError(f"year {year} mixes reference distributions")
+        entry["points"].append((float(row["score"]), float(row["percentile"])))
+    curves = {}
+    for year, entry in years.items():
+        carried = entry["source_year"] != year
+        boundary = "hold" if carried else "missing"
+        curves[year] = Curve(
+            entry["points"], "linear", lower=boundary, upper=boundary,
+            metadata={"distribution_year": entry["source_year"], "carried": carried},
+        )
+    return curves
 
 
 def interpolate(points, score):
@@ -35,8 +46,9 @@ def interpolate(points, score):
 def percentile(score, year):
     """The empirical share at or below a score in the year's reference CDF.
 
-    Between two points the CDF is linear; scores outside the measured curve are
-    missing rather than being promoted to an extreme percentile.
+    Between two points the CDF is linear. An exact-year curve rejects scores
+    outside its support; a borrowed neighboring-year curve clamps and records
+    that its endpoint handled the score.
     """
     points = table().get(year)
     if not points or score is None:

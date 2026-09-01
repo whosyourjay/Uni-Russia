@@ -26,11 +26,11 @@ Order: impact first. “Done when” describes a published table, not a download
   nearest distribution, but the comparison population still lacks a sourced
   count for 2011–2018.
 
-- [ ] **Recover admitted averages outside the measured exam curve.** They now
-  count as unscored coverage instead of inheriting an endpoint percentile.
-  Separate achievement points, mixed-subject averages, and borrowed-year CDF
-  gaps; recover a percentile only where the underlying exam score can be
-  reconstructed.
+- [ ] **Recover admitted averages outside the measured exam curve.** Exact-year
+  outliers count as unscored coverage. A neighboring-year CDF clamps them and
+  marks the reading; replace that endpoint with a posterior from year-to-year
+  CDF drift where possible. Separate achievement points and mixed-subject
+  averages before reconstructing an exam percentile.
 
 ## Recover what the monitoring already published — modest work
 
